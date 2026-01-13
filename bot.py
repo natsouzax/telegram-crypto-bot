@@ -108,7 +108,7 @@ async def promo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 app = ApplicationBuilder().token(TOKEN).build()
 app.job_queue.run_daily(
     curiosidade_diaria,
-    time=time(hour=11, minute=20, tzinfo=TIMEZONE)
+    time=time(hour=12, minute=37, tzinfo=TIMEZONE)
 )
 
 
@@ -120,4 +120,5 @@ app.add_handler(CommandHandler("id", id))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
