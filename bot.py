@@ -7,7 +7,9 @@ import os
 
 TIMEZONE = pytz.timezone("America/Sao_Paulo")
 
-TOKEN = "8472601062:AAFFVx4c7KhkW9nWRMoPzzYBrJT9I-H4fNw"
+import os
+TOKEN = os.getenv("BOT_TOKEN")
+
 GROUP_ID = -1003422643576  # cole aqui o ID real do grupo
 CURIOSIDADES_CRIPTO = [
     "O Bitcoin foi criado em 2008 por um autor desconhecido usando o pseudônimo Satoshi Nakamoto.",
@@ -118,3 +120,4 @@ app.add_handler(CommandHandler("id", id))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
