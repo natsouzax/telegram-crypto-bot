@@ -3,6 +3,7 @@ import os
 import pytz
 import random
 from datetime import time
+from huggingface_hub import InferenceClient
 
 from telegram import Update
 from telegram.ext import (
@@ -34,7 +35,11 @@ CURIOSIDADES_CRIPTO = [
 
 # ================== HUGGING FACE ==================
 
-HF_API_URL = "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2"
+hf_client = InferenceClient(
+    model="mistralai/Mistral-7B-Instruct-v0.2",
+    token=os.getenv("HF_API_KEY")
+)
+
 
 HF_HEADERS = {
     "Authorization": f"Bearer {os.getenv('HF_API_KEY')}",
@@ -45,58 +50,24 @@ HF_HEADERS = {
 # ================== IA ==================
 
 async def responder_com_ia(pergunta: str) -> str:
-    payload = {
-        "inputs": pergunta,
-        "parameters": {
-            "max_new_tokens": 300,
-            "temperature": 0.5,
-            "do_sample": True
-        }
-    }
-
     try:
-        response = requests.post(
-            HF_API_URL,
-            headers=HF_HEADERS,
-            json=payload,
-            timeout=60
+        resposta = hf_client.text_generation(
+            prompt=(
+                "Você é um assistente educacional especializado em criptomoedas. "
+                "Responda de forma clara, objetiva e profissional, "
+                "sem fazer recomendações financeiras.\n\n"
+                f"Pergunta: {pergunta}\nResposta:"
+            ),
+            max_new_tokens=300,
+            temperature=0.5
         )
 
-        data = response.json()
+        if resposta and isinstance(resposta, str):
+            return resposta.strip()
 
-        # Caso erro explícito
-        if isinstance(data, dict) and "error" in data:
-            if "loading" in data["error"].lower():
-                return "⏳ Estou me preparando para responder. Tente novamente em alguns segundos."
-            return "⚠️ No momento não consegui responder sua pergunta."
+        return "⚠️ Não consegui gerar uma resposta agora."
 
-        # Caso lista padrão
-        if isinstance(data, list) and len(data) > 0:
-            item = data[0]
-
-            if isinstance(item, dict):
-                if "generated_text" in item:
-                    return item["generated_text"].strip()
-
-                if "text" in item:
-                    return item["text"].strip()
-
-        # Caso formato alternativo
-        if isinstance(data, dict):
-            if "generated_text" in data:
-                return data["generated_text"].strip()
-
-            if "text" in data:
-                return data["text"].strip()
-
-            if "outputs" in data and isinstance(data["outputs"], list):
-                out = data["outputs"][0]
-                if "text" in out:
-                    return out["text"].strip()
-
-        return "⚠️ No momento não consegui responder sua pergunta."
-
-    except Exception:
+    except Exception as e:
         return "⚠️ Ocorreu um erro ao processar sua pergunta."
 
 
@@ -209,6 +180,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
