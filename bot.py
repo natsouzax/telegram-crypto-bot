@@ -61,6 +61,11 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ================== IA (RESPOSTA) ==================
 
+async def testen(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    texto = await gerar_conteudo_automatico("noite")
+    await context.bot.send_message(chat_id=GROUP_ID, text=texto)
+
+
 async def teste(update: Update, context: ContextTypes.DEFAULT_TYPE):
     texto = await gerar_conteudo_automatico("manha")
     await context.bot.send_message(chat_id=GROUP_ID, text=texto)
@@ -239,12 +244,12 @@ app = ApplicationBuilder().token(TOKEN).build()
 # Conteúdo automático com IA
 app.job_queue.run_daily(
     post_manha,
-    time=time(hour=10, minute=45, tzinfo=TIMEZONE)
+    time=time(hour=8, minute=00, tzinfo=TIMEZONE)
 )
 
 app.job_queue.run_daily(
     post_noite,
-    time=time(hour=10, minute=46, tzinfo=TIMEZONE)
+    time=time(hour=19, minute=00, tzinfo=TIMEZONE)
 )
 
 # Curiosidade fixa (opcional)
@@ -259,9 +264,11 @@ app.add_handler(CommandHandler("promo", promo))
 app.add_handler(CommandHandler("id", id))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 app.add_handler(CommandHandler("teste", teste))
+app.add_handler(CommandHandler("testen", testen))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
