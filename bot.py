@@ -64,20 +64,35 @@ async def responder_com_ia(pergunta: str) -> str:
 
         data = response.json()
 
-        # Caso: modelo ainda carregando (cold start)
+        # Caso erro explícito
         if isinstance(data, dict) and "error" in data:
             if "loading" in data["error"].lower():
                 return "⏳ Estou me preparando para responder. Tente novamente em alguns segundos."
             return "⚠️ No momento não consegui responder sua pergunta."
 
-        # Caso padrão: lista com texto gerado
+        # Caso lista padrão
         if isinstance(data, list) and len(data) > 0:
-            if "generated_text" in data[0]:
-                return data[0]["generated_text"].strip()
+            item = data[0]
 
-        # Caso alternativo: texto direto
-        if isinstance(data, dict) and "generated_text" in data:
-            return data["generated_text"].strip()
+            if isinstance(item, dict):
+                if "generated_text" in item:
+                    return item["generated_text"].strip()
+
+                if "text" in item:
+                    return item["text"].strip()
+
+        # Caso formato alternativo
+        if isinstance(data, dict):
+            if "generated_text" in data:
+                return data["generated_text"].strip()
+
+            if "text" in data:
+                return data["text"].strip()
+
+            if "outputs" in data and isinstance(data["outputs"], list):
+                out = data["outputs"][0]
+                if "text" in out:
+                    return out["text"].strip()
 
         return "⚠️ No momento não consegui responder sua pergunta."
 
@@ -194,6 +209,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
