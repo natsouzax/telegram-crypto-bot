@@ -24,6 +24,18 @@ TOKEN = os.getenv("BOT_TOKEN")
 GROUP_ID = -1003422643576  # ID do grupo
 ARQUIVO_USADAS = "usadas.txt"
 
+CTAS_SUAVES = [
+    "Para entender melhor o cenário jurídico dos criptoativos, acompanhe a BitJuris.",
+    "A BitJuris compartilha informações educativas para quem quer entender cripto com responsabilidade.",
+    "Conteúdo informativo e educativo, como este, faz parte da proposta da BitJuris.",
+    "Acompanhe a BitJuris para aprender mais sobre tecnologia, criptoativos e segurança jurídica.",
+]
+
+IDENTIDADE_MARCA = (
+    "A BitJuris é uma LegalTech focada em educação, segurança jurídica "
+    "e informação responsável sobre criptoativos e blockchain."
+)
+
 TEMAS_CRIPTO = [
     "história das criptomoedas",
     "blockchain e tecnologia",
@@ -85,38 +97,49 @@ async def chat_ia(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 from datetime import datetime
 
+from datetime import datetime
+
 async def gerar_conteudo_automatico(tipo: str) -> str:
     hoje = datetime.now(TIMEZONE)
     tema = TEMAS_CRIPTO[hoje.weekday() % len(TEMAS_CRIPTO)]
+    cta = random.choice(CTAS_SUAVES)
 
     if tipo == "manha":
         prompt = (
             f"Gere uma curiosidade curta sobre {tema}. "
             "Use linguagem simples, educativa e profissional. "
             "Não faça recomendações financeiras. "
-            "Máximo de 3 linhas."
+            "Ao final, inclua uma frase curta e sutil de contextualização institucional "
+            f"relacionada à marca BitJuris, sem tom comercial.\n\n"
+            f"Contexto da marca: {IDENTIDADE_MARCA}\n"
+            f"Frase institucional sugerida: {cta}\n"
+            "Máximo de 3 linhas para o conteúdo principal."
         )
         titulo = "☀️ Curiosidade do dia"
     else:
         prompt = (
             f"Gere um insight curto explicando {tema}. "
-            "Use tom claro e acessível para público geral. "
+            "Use tom claro, profissional e acessível. "
             "Não faça recomendações financeiras. "
-            "Máximo de 3 linhas."
+            "Finalize com uma frase institucional leve relacionada à BitJuris.\n\n"
+            f"Contexto da marca: {IDENTIDADE_MARCA}\n"
+            f"Frase institucional sugerida: {cta}\n"
+            "Máximo de 3 linhas para o conteúdo principal."
         )
         titulo = "🌙 Insight da noite"
 
     resp = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "Você é um criador de conteúdo educacional sobre criptomoedas."},
+            {"role": "system", "content": "Você é um criador de conteúdo educacional institucional."},
             {"role": "user", "content": prompt}
         ],
         temperature=0.7,
-        max_tokens=120
+        max_tokens=140
     )
 
     return f"{titulo}\n\n{resp.choices[0].message.content.strip()}"
+
 
 
 async def post_manha(context: ContextTypes.DEFAULT_TYPE):
@@ -233,5 +256,6 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
