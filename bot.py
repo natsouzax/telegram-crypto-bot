@@ -34,7 +34,8 @@ CURIOSIDADES_CRIPTO = [
 
 # ================== HUGGING FACE ==================
 
-HF_API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
+HF_API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
+
 HF_HEADERS = {
     "Authorization": f"Bearer {os.getenv('HF_API_KEY')}"
     print("HF_API_KEY carregada:", bool(os.getenv("HF_API_KEY")))
@@ -44,16 +45,11 @@ HF_HEADERS = {
 
 async def responder_com_ia(pergunta: str) -> str:
     payload = {
-        "inputs": (
-            "Você é um assistente educacional especializado em criptomoedas. "
-            "Responda de forma clara, objetiva e profissional, sem fazer "
-            "recomendações financeiras.\n\n"
-            f"Pergunta: {pergunta}\nResposta:"
-        ),
+        "inputs": pergunta,
         "parameters": {
             "max_new_tokens": 300,
             "temperature": 0.5,
-            "return_full_text": False
+            "do_sample": True
         }
     }
 
@@ -67,23 +63,28 @@ async def responder_com_ia(pergunta: str) -> str:
 
         data = response.json()
 
-        # 🟡 Caso 1: modelo carregando
+        print("HF RESPONSE:", data)  # DEBUG TEMPORÁRIO
+
+        # Caso erro explícito
         if isinstance(data, dict) and "error" in data:
             if "loading" in data["error"].lower():
-                return "⏳ Estou me preparando para responder. Tente novamente em alguns segundos."
+                return "⏳ Estou inicializando. Tente novamente em alguns segundos."
+            return f"⚠️ Erro da IA: {data['error']}"
 
-            return "⚠️ No momento não consegui responder sua pergunta."
-
-        # 🟢 Caso 2: resposta padrão (lista)
+        # Caso lista padrão
         if isinstance(data, list) and len(data) > 0:
             if "generated_text" in data[0]:
                 return data[0]["generated_text"].strip()
 
-        return "⚠️ Não consegui gerar uma resposta agora."
+        # Caso texto direto
+        if isinstance(data, dict) and "generated_text" in data:
+            return data["generated_text"].strip()
+
+        return "⚠️ A IA não retornou uma resposta válida."
 
     except Exception as e:
-        return "⚠️ Ocorreu um erro ao processar sua pergunta."
-
+        print("HF EXCEPTION:", e)
+        return "⚠️ Erro ao processar sua pergunta."
 
 async def chat_ia(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
@@ -192,6 +193,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
