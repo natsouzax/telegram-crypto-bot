@@ -4,7 +4,6 @@ from database import cursor, conn
 from datetime import time
 import pytz
 import os
-from openai import OpenAI
 from telegram.ext import MessageHandler, filters
 import requests
 
@@ -163,6 +162,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
