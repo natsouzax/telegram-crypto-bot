@@ -21,7 +21,7 @@ from database import cursor, conn
 TIMEZONE = pytz.timezone("America/Sao_Paulo")
 TOKEN = os.getenv("BOT_TOKEN")
 
-GROUP_ID = -1003422643576
+GROUP_ID = -1003422643576  # ID do grupo
 ARQUIVO_USADAS = "usadas.txt"
 
 CURIOSIDADES_CRIPTO = [
@@ -36,7 +36,7 @@ CURIOSIDADES_CRIPTO = [
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# ================== IA ==================
+# ================== IA (RESPOSTA) ==================
 
 async def responder_com_ia(pergunta: str) -> str:
     try:
@@ -56,15 +56,13 @@ async def responder_com_ia(pergunta: str) -> str:
             temperature=0.5,
             max_tokens=300
         )
-
         return resp.choices[0].message.content.strip()
-
     except Exception:
         return "⚠️ Ocorreu um erro ao processar sua pergunta."
 
 
 async def chat_ia(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # IA apenas no privado (boa prática)
+    # IA apenas no privado
     if update.effective_chat.type != "private":
         return
 
@@ -72,13 +70,60 @@ async def chat_ia(update: Update, context: ContextTypes.DEFAULT_TYPE):
     resposta = await responder_com_ia(update.message.text)
     await update.message.reply_text(resposta)
 
+# ================== IA (CONTEÚDO AUTOMÁTICO) ==================
 
-# ================== CURIOSIDADE DIÁRIA ==================
+async def gerar_conteudo_automatico(tipo: str) -> str:
+    if tipo == "manha":
+        prompt = (
+            "Crie uma curiosidade curta e interessante sobre criptomoedas ou blockchain. "
+            "Use linguagem simples, educativa e profissional. "
+            "Não faça recomendações financeiras. "
+            "Máximo de 3 linhas."
+        )
+        titulo = "☀️ Curiosidade do dia"
+    else:
+        prompt = (
+            "Crie um insight curto ou explicação simples sobre criptomoedas ou blockchain, "
+            "voltado para público geral. "
+            "Não faça recomendações financeiras. "
+            "Máximo de 3 linhas."
+        )
+        titulo = "🌙 Insight da noite"
+
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Você é um criador de conteúdo educacional sobre criptomoedas."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=120
+        )
+
+        texto = resp.choices[0].message.content.strip()
+        return f"{titulo}\n\n{texto}"
+
+    except Exception:
+        return None
+
+
+async def post_manha(context: ContextTypes.DEFAULT_TYPE):
+    texto = await gerar_conteudo_automatico("manha")
+    if texto:
+        await context.bot.send_message(chat_id=GROUP_ID, text=texto)
+
+
+async def post_noite(context: ContextTypes.DEFAULT_TYPE):
+    texto = await gerar_conteudo_automatico("noite")
+    if texto:
+        await context.bot.send_message(chat_id=GROUP_ID, text=texto)
+
+# ================== CURIOSIDADE FIXA (OPCIONAL) ==================
 
 def carregar_usadas():
     if not os.path.exists(ARQUIVO_USADAS):
         return set()
-
     with open(ARQUIVO_USADAS, "r", encoding="utf-8") as f:
         return set(l.strip() for l in f.readlines())
 
@@ -101,9 +146,8 @@ async def curiosidade_diaria(context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(
         chat_id=GROUP_ID,
-        text=f"📌 Curiosidade cripto do dia:\n\n{curiosidade}"
+        text=f"📌 Curiosidade cripto do dia\n\n{curiosidade}"
     )
-
 
 # ================== COMMANDS ==================
 
@@ -125,13 +169,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-
-    cursor.execute(
-        "UPDATE users SET active = 0 WHERE telegram_id = ?",
-        (user.id,)
-    )
+    cursor.execute("UPDATE users SET active = 0 WHERE telegram_id = ?", (user.id,))
     conn.commit()
-
     await update.message.reply_text("Você foi removido da lista 👍")
 
 
@@ -154,11 +193,22 @@ async def promo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"ID deste chat: {update.effective_chat.id}")
 
-
 # ================== INIT ==================
 
 app = ApplicationBuilder().token(TOKEN).build()
 
+# Conteúdo automático com IA
+app.job_queue.run_daily(
+    post_manha,
+    time=time(hour=8, minute=0, tzinfo=TIMEZONE)
+)
+
+app.job_queue.run_daily(
+    post_noite,
+    time=time(hour=20, minute=0, tzinfo=TIMEZONE)
+)
+
+# Curiosidade fixa (opcional)
 app.job_queue.run_daily(
     curiosidade_diaria,
     time=time(hour=7, minute=0, tzinfo=TIMEZONE)
