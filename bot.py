@@ -21,7 +21,7 @@ from database import cursor, conn
 TIMEZONE = pytz.timezone("America/Sao_Paulo")
 TOKEN = os.getenv("BOT_TOKEN")
 
-GROUP_ID = -1003422643576  # ID do grupo
+GROUP_ID = -1003534870430  # ID do grupo
 ARQUIVO_USADAS = "usadas.txt"
 
 CTAS_SUAVES = [
@@ -256,6 +256,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
