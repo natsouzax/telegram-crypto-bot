@@ -1,11 +1,8 @@
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-from database import cursor, conn
-from datetime import time
-import pytz
-import os
-from telegram.ext import MessageHandler, filters
 import requests
+import os
+import pytz
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
 client = OpenAI(api_key=os.getenv("Huggin_API_KEY"))
 TIMEZONE = pytz.timezone("America/Sao_Paulo")
@@ -162,6 +159,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
