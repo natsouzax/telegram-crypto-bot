@@ -42,6 +42,7 @@ HF_HEADERS = {
 # ================== IA ==================
 
 async def responder_com_ia(pergunta: str) -> str:
+    async def responder_com_ia(pergunta: str) -> str:
     payload = {
         "inputs": (
             "Você é um assistente educacional especializado em criptomoedas. "
@@ -64,12 +65,23 @@ async def responder_com_ia(pergunta: str) -> str:
             timeout=60
         )
 
-        if response.status_code != 200:
-            return "⚠️ No momento não consegui responder. Tente novamente."
+        data = response.json()
 
-        return response.json()[0]["generated_text"].strip()
+        # 🟡 Caso 1: modelo carregando
+        if isinstance(data, dict) and "error" in data:
+            if "loading" in data["error"].lower():
+                return "⏳ Estou me preparando para responder. Tente novamente em alguns segundos."
 
-    except Exception:
+            return "⚠️ No momento não consegui responder sua pergunta."
+
+        # 🟢 Caso 2: resposta padrão (lista)
+        if isinstance(data, list) and len(data) > 0:
+            if "generated_text" in data[0]:
+                return data[0]["generated_text"].strip()
+
+        return "⚠️ Não consegui gerar uma resposta agora."
+
+    except Exception as e:
         return "⚠️ Ocorreu um erro ao processar sua pergunta."
 
 
@@ -180,3 +192,4 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
