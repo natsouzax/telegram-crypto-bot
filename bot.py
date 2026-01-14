@@ -112,7 +112,7 @@ async def gerar_conteudo_automatico(tipo: str) -> str:
             "Ao final, inclua uma frase curta e sutil de contextualização institucional "
             f"relacionada à marca BitJuris, sem tom comercial.\n\n"
             f"Contexto da marca: {IDENTIDADE_MARCA}\n"
-            f"Frase institucional sugerida: {cta}\n"
+
             "Máximo de 3 linhas para o conteúdo principal."
         )
         titulo = "☀️ Curiosidade do dia"
@@ -234,12 +234,12 @@ app = ApplicationBuilder().token(TOKEN).build()
 # Conteúdo automático com IA
 app.job_queue.run_daily(
     post_manha,
-    time=time(hour=10, minute=35, tzinfo=TIMEZONE)
+    time=time(hour=10, minute=45, tzinfo=TIMEZONE)
 )
 
 app.job_queue.run_daily(
     post_noite,
-    time=time(hour=10, minute=38, tzinfo=TIMEZONE)
+    time=time(hour=10, minute=46, tzinfo=TIMEZONE)
 )
 
 # Curiosidade fixa (opcional)
@@ -256,6 +256,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
