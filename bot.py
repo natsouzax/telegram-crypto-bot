@@ -42,7 +42,6 @@ HF_HEADERS = {
 # ================== IA ==================
 
 async def responder_com_ia(pergunta: str) -> str:
-    async def responder_com_ia(pergunta: str) -> str:
     payload = {
         "inputs": (
             "Você é um assistente educacional especializado em criptomoedas. "
@@ -192,4 +191,5 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
