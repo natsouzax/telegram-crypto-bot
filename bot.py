@@ -38,7 +38,6 @@ HF_API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-I
 
 HF_HEADERS = {
     "Authorization": f"Bearer {os.getenv('HF_API_KEY')}"
-    print("HF_API_KEY carregada:", bool(os.getenv("HF_API_KEY")))
 }
 
 # ================== IA ==================
@@ -193,6 +192,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
