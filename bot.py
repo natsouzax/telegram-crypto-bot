@@ -1,7 +1,7 @@
 import os
 import pytz
 import random
-from datetime import time
+from datetime import datetime, time
 
 from telegram import Update
 from telegram.ext import (
@@ -20,123 +20,73 @@ from database import cursor, conn
 
 TIMEZONE = pytz.timezone("America/Sao_Paulo")
 TOKEN = os.getenv("BOT_TOKEN")
-
 GROUP_ID = -1003534870430  # ID do grupo
-ARQUIVO_USADAS = "usadas.txt"
 
-CTAS_SUAVES = [
-    "Para entender melhor o cenário jurídico dos criptoativos, acompanhe a BitJuris.",
-    "A BitJuris compartilha informações educativas para quem quer entender cripto com responsabilidade.",
-    "Conteúdo informativo e educativo, como este, faz parte da proposta da BitJuris.",
-    "Acompanhe a BitJuris para aprender mais sobre tecnologia, criptoativos e segurança jurídica.",
+ASSINATURA = "—\n📌 Conteúdo educativo • BitJuris"
+
+TEMAS_SEMANA = {
+    0: "segurança digital e proteção de criptoativos",
+    1: "blockchain e tecnologia",
+    2: "mitos e verdades sobre criptomoedas",
+    3: "funcionamento do mercado cripto",
+    4: "aspectos jurídicos dos criptoativos",
+    5: "curiosidades históricas sobre criptomoedas",
+    6: "conceitos básicos sobre cripto e blockchain",
+}
+
+CTAS_NEUTROS = [
+    "Conteúdo educativo faz parte da proposta da BitJuris.",
+    "A BitJuris atua com foco em educação e segurança jurídica digital.",
+    "Informação responsável é um dos pilares da BitJuris."
 ]
 
-IDENTIDADE_MARCA = (
-    "A BitJuris é uma LegalTech focada em educação, segurança jurídica "
-    "e informação responsável sobre criptoativos e blockchain."
-)
-
-TEMAS_CRIPTO = [
-    "história das criptomoedas",
-    "blockchain e tecnologia",
-    "segurança e boas práticas",
-    "mitos e verdades sobre cripto",
-    "curiosidades pouco conhecidas",
-    "erros comuns de iniciantes",
-    "diferença entre Bitcoin e outras criptos",
-    "como funciona uma transação blockchain",
+CTA_SEXTA = [
+    "Acompanhe a BitJuris para entender o cenário jurídico dos criptoativos.",
+    "A BitJuris conecta tecnologia, criptoativos e segurança jurídica."
 ]
 
-CURIOSIDADES_CRIPTO = [
-    "O Bitcoin foi criado em 2008 por um autor desconhecido usando o pseudônimo Satoshi Nakamoto.",
-    "A oferta máxima de Bitcoin é limitada a 21 milhões de unidades.",
-    "A primeira transação comercial com Bitcoin foi a compra de duas pizzas por 10.000 BTC.",
-    "Blockchain é um registro público e imutável de transações.",
-    "Existem milhares de criptomoedas, mas o Bitcoin ainda domina o mercado."
-]
 
 # ================== OPENAI ==================
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# ================== IA (RESPOSTA) ==================
 
-async def testen(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    texto = await gerar_conteudo_automatico("noite")
-    await context.bot.send_message(chat_id=GROUP_ID, text=texto)
+# ================== FUNÇÕES AUXILIARES ==================
 
+def obter_cta(dia_semana: int) -> str:
+    if dia_semana == 4:  # sexta
+        return random.choice(CTA_SEXTA)
+    elif dia_semana < 4:  # seg a qui
+        return random.choice(CTAS_NEUTROS)
+    else:
+        return ""
 
-async def teste(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    texto = await gerar_conteudo_automatico("manha")
-    await context.bot.send_message(chat_id=GROUP_ID, text=texto)
-
-
-async def responder_com_ia(pergunta: str) -> str:
-    try:
-        resp = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "Você é um assistente educacional especializado em criptomoedas. "
-                        "Responda de forma clara, objetiva e profissional, "
-                        "sem fazer recomendações financeiras."
-                    )
-                },
-                {"role": "user", "content": pergunta}
-            ],
-            temperature=0.5,
-            max_tokens=300
-        )
-        return resp.choices[0].message.content.strip()
-    except Exception:
-        return "⚠️ Ocorreu um erro ao processar sua pergunta."
-
-
-async def chat_ia(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # IA apenas no privado
-    if update.effective_chat.type != "private":
-        return
-
-    await update.message.chat.send_action("typing")
-    resposta = await responder_com_ia(update.message.text)
-    await update.message.reply_text(resposta)
 
 # ================== IA (CONTEÚDO AUTOMÁTICO) ==================
 
-from datetime import datetime
-
-from datetime import datetime
-
 async def gerar_conteudo_automatico(tipo: str) -> str:
     hoje = datetime.now(TIMEZONE)
-    tema = TEMAS_CRIPTO[hoje.weekday() % len(TEMAS_CRIPTO)]
-    cta = random.choice(CTAS_SUAVES)
+    dia = hoje.weekday()
+
+    tema = TEMAS_SEMANA[dia]
+    cta = obter_cta(dia)
 
     if tipo == "manha":
+        titulo = "☀️ Curiosidade do dia"
         prompt = (
             f"Gere uma curiosidade curta sobre {tema}. "
             "Use linguagem simples, educativa e profissional. "
             "Não faça recomendações financeiras. "
-            "Ao final, inclua uma frase curta e sutil de contextualização institucional "
-            f"relacionada à marca BitJuris, sem tom comercial.\n\n"
-            f"Contexto da marca: {IDENTIDADE_MARCA}\n"
-
-            "Máximo de 3 linhas para o conteúdo principal."
+            "Máximo de 3 linhas."
         )
-        titulo = "☀️ Curiosidade do dia"
     else:
+        titulo = "🌙 Insight da noite"
         prompt = (
             f"Gere um insight curto explicando {tema}. "
             "Use tom claro, profissional e acessível. "
             "Não faça recomendações financeiras. "
-            "Finalize com uma frase institucional leve relacionada à BitJuris.\n\n"
-            f"Contexto da marca: {IDENTIDADE_MARCA}\n"
-            f"Frase institucional sugerida: {cta}\n"
-            "Máximo de 3 linhas para o conteúdo principal."
+            "Máximo de 3 linhas."
         )
-        titulo = "🌙 Insight da noite"
 
     resp = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -148,66 +98,70 @@ async def gerar_conteudo_automatico(tipo: str) -> str:
         max_tokens=140
     )
 
-    return f"{titulo}\n\n{resp.choices[0].message.content.strip()}"
+    conteudo = resp.choices[0].message.content.strip()
+
+    texto = f"{titulo}\n\n{conteudo}"
+
+    if cta:
+        texto += f"\n\n{cta}"
+
+    texto += f"\n\n{ASSINATURA}"
+
+    return texto
 
 
+# ================== POSTS AUTOMÁTICOS ==================
 
 async def post_manha(context: ContextTypes.DEFAULT_TYPE):
     texto = await gerar_conteudo_automatico("manha")
-    if texto:
-        await context.bot.send_message(chat_id=GROUP_ID, text=texto)
+    await context.bot.send_message(chat_id=GROUP_ID, text=texto)
 
 
 async def post_noite(context: ContextTypes.DEFAULT_TYPE):
     texto = await gerar_conteudo_automatico("noite")
-    if texto:
-        await context.bot.send_message(chat_id=GROUP_ID, text=texto)
-
-# ================== CURIOSIDADE FIXA (OPCIONAL) ==================
-
-def carregar_usadas():
-    if not os.path.exists(ARQUIVO_USADAS):
-        return set()
-    with open(ARQUIVO_USADAS, "r", encoding="utf-8") as f:
-        return set(l.strip() for l in f.readlines())
+    await context.bot.send_message(chat_id=GROUP_ID, text=texto)
 
 
-def salvar_usada(curiosidade):
-    with open(ARQUIVO_USADAS, "a", encoding="utf-8") as f:
-        f.write(curiosidade + "\n")
-
-
-async def curiosidade_diaria(context: ContextTypes.DEFAULT_TYPE):
-    usadas = carregar_usadas()
-    disponiveis = [c for c in CURIOSIDADES_CRIPTO if c not in usadas]
-
-    if not disponiveis:
-        open(ARQUIVO_USADAS, "w").close()
-        disponiveis = CURIOSIDADES_CRIPTO.copy()
-
-    curiosidade = random.choice(disponiveis)
-    salvar_usada(curiosidade)
-
-    await context.bot.send_message(
-        chat_id=GROUP_ID,
-        text=f"📌 Curiosidade cripto do dia\n\n{curiosidade}"
+async def resumo_semanal(context: ContextTypes.DEFAULT_TYPE):
+    texto = (
+        "📊 Resumo da semana — BitJuris\n\n"
+        "• Segurança digital e proteção de criptoativos\n"
+        "• Blockchain e tecnologia\n"
+        "• Mitos e verdades sobre criptomoedas\n"
+        "• Funcionamento do mercado cripto\n"
+        "• Aspectos jurídicos dos criptoativos\n\n"
+        "Conteúdo educativo produzido automaticamente ao longo da semana."
+        f"\n\n{ASSINATURA}"
     )
 
-# ================== COMMANDS ==================
+    await context.bot.send_message(chat_id=GROUP_ID, text=texto)
+
+
+# ================== COMANDOS DE TESTE ==================
+
+async def teste(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    texto = await gerar_conteudo_automatico("manha")
+    await context.bot.send_message(chat_id=GROUP_ID, text=texto)
+
+
+async def testen(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    texto = await gerar_conteudo_automatico("noite")
+    await context.bot.send_message(chat_id=GROUP_ID, text=texto)
+
+
+# ================== COMANDOS BÁSICOS ==================
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-
-    cursor.execute("""
-        INSERT OR IGNORE INTO users (telegram_id, name, active)
-        VALUES (?, ?, 1)
-    """, (user.id, user.first_name))
+    cursor.execute(
+        "INSERT OR IGNORE INTO users (telegram_id, name, active) VALUES (?, ?, 1)",
+        (user.id, user.first_name)
+    )
     conn.commit()
 
     await update.message.reply_text(
         f"Olá {user.first_name}! 👋\n"
-        "Você agora receberá nossas promoções exclusivas!\n\n"
-        "Para sair, use /stop"
+        "Este é o BitJurisBot, focado em conteúdo educativo sobre criptoativos e segurança jurídica."
     )
 
 
@@ -218,60 +172,29 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Você foi removido da lista 👍")
 
 
-async def promo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    cursor.execute("SELECT telegram_id, name FROM users WHERE active = 1")
-    users = cursor.fetchall()
-
-    for telegram_id, name in users:
-        try:
-            await context.bot.send_message(
-                chat_id=telegram_id,
-                text=f"🔥 Promoção exclusiva, {name}!\nAcesse agora: https://seusite.com"
-            )
-        except:
-            pass
-
-    await update.message.reply_text("Promoção enviada com sucesso 🚀")
-
-
 async def id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"ID deste chat: {update.effective_chat.id}")
+
 
 # ================== INIT ==================
 
 app = ApplicationBuilder().token(TOKEN).build()
 
-# Conteúdo automático com IA
+# Agendamentos
+app.job_queue.run_daily(post_manha, time=time(hour=8, minute=0, tzinfo=TIMEZONE))
+app.job_queue.run_daily(post_noite, time=time(hour=19, minute=0, tzinfo=TIMEZONE))
 app.job_queue.run_daily(
-    post_manha,
-    time=time(hour=8, minute=00, tzinfo=TIMEZONE)
+    resumo_semanal,
+    time=time(hour=19, minute=30, tzinfo=TIMEZONE),
+    days=(4,)  # sexta-feira
 )
 
-app.job_queue.run_daily(
-    post_noite,
-    time=time(hour=19, minute=00, tzinfo=TIMEZONE)
-)
-
-# Curiosidade fixa (opcional)
-app.job_queue.run_daily(
-    curiosidade_diaria,
-    time=time(hour=7, minute=0, tzinfo=TIMEZONE)
-)
-
+# Handlers
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("stop", stop))
-app.add_handler(CommandHandler("promo", promo))
 app.add_handler(CommandHandler("id", id))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 app.add_handler(CommandHandler("teste", teste))
 app.add_handler(CommandHandler("testen", testen))
 
-print("🤖 Bot rodando...")
+print("🤖 BitJurisBot rodando...")
 app.run_polling()
-
-
-
-
-
-
-
