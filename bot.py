@@ -61,6 +61,11 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ================== IA (RESPOSTA) ==================
 
+async def teste(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    texto = await gerar_conteudo_automatico("manha")
+    await context.bot.send_message(chat_id=GROUP_ID, text=texto)
+
+
 async def responder_com_ia(pergunta: str) -> str:
     try:
         resp = client.chat.completions.create(
@@ -253,9 +258,11 @@ app.add_handler(CommandHandler("stop", stop))
 app.add_handler(CommandHandler("promo", promo))
 app.add_handler(CommandHandler("id", id))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
+app.add_handler(CommandHandler("teste", teste))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
