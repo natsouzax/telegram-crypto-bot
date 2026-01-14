@@ -200,12 +200,12 @@ app = ApplicationBuilder().token(TOKEN).build()
 # Conteúdo automático com IA
 app.job_queue.run_daily(
     post_manha,
-    time=time(hour=8, minute=0, tzinfo=TIMEZONE)
+    time=time(hour=10, minute=25, tzinfo=TIMEZONE)
 )
 
 app.job_queue.run_daily(
     post_noite,
-    time=time(hour=20, minute=0, tzinfo=TIMEZONE)
+    time=time(hour=10, minute=28, tzinfo=TIMEZONE)
 )
 
 # Curiosidade fixa (opcional)
@@ -222,3 +222,4 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
