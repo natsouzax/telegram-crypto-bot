@@ -1,9 +1,7 @@
-import requests
 import os
 import pytz
 import random
 from datetime import time
-from huggingface_hub import InferenceClient
 
 from telegram import Update
 from telegram.ext import (
@@ -14,6 +12,7 @@ from telegram.ext import (
     filters
 )
 
+from openai import OpenAI
 from database import cursor, conn
 
 
@@ -33,53 +32,44 @@ CURIOSIDADES_CRIPTO = [
     "Existem milhares de criptomoedas, mas o Bitcoin ainda domina o mercado."
 ]
 
-# ================== HUGGING FACE ==================
+# ================== OPENAI ==================
 
-hf_client = InferenceClient(
-    model="mistralai/Mistral-7B-Instruct-v0.2",
-    token=os.getenv("HF_API_KEY")
-)
-
-
-HF_HEADERS = {
-    "Authorization": f"Bearer {os.getenv('HF_API_KEY')}",
-    "Content-Type": "application/json"
-}
-
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ================== IA ==================
 
 async def responder_com_ia(pergunta: str) -> str:
     try:
-        resposta = hf_client.text_generation(
-            prompt=(
-                "Você é um assistente educacional especializado em criptomoedas. "
-                "Responda de forma clara, objetiva e profissional, "
-                "sem fazer recomendações financeiras.\n\n"
-                f"Pergunta: {pergunta}\nResposta:"
-            ),
-            max_new_tokens=300,
-            temperature=0.5
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Você é um assistente educacional especializado em criptomoedas. "
+                        "Responda de forma clara, objetiva e profissional, "
+                        "sem fazer recomendações financeiras."
+                    )
+                },
+                {"role": "user", "content": pergunta}
+            ],
+            temperature=0.5,
+            max_tokens=300
         )
 
-        if resposta and isinstance(resposta, str):
-            return resposta.strip()
+        return resp.choices[0].message.content.strip()
 
-        return "⚠️ Não consegui gerar uma resposta agora."
-
-    except Exception as e:
+    except Exception:
         return "⚠️ Ocorreu um erro ao processar sua pergunta."
 
 
 async def chat_ia(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Restringe IA ao privado (boa prática)
+    # IA apenas no privado (boa prática)
     if update.effective_chat.type != "private":
         return
 
-    texto = update.message.text
-
     await update.message.chat.send_action("typing")
-    resposta = await responder_com_ia(texto)
+    resposta = await responder_com_ia(update.message.text)
     await update.message.reply_text(resposta)
 
 
@@ -113,6 +103,7 @@ async def curiosidade_diaria(context: ContextTypes.DEFAULT_TYPE):
         chat_id=GROUP_ID,
         text=f"📌 Curiosidade cripto do dia:\n\n{curiosidade}"
     )
+
 
 # ================== COMMANDS ==================
 
@@ -163,6 +154,7 @@ async def promo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"ID deste chat: {update.effective_chat.id}")
 
+
 # ================== INIT ==================
 
 app = ApplicationBuilder().token(TOKEN).build()
@@ -180,13 +172,3 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
-
-
-
-
-
-
-
-
-
-
