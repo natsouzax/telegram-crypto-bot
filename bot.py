@@ -4,7 +4,11 @@ from database import cursor, conn
 from datetime import time
 import pytz
 import os
+from openai import OpenAI
+from telegram.ext import MessageHandler, filters
+import requests
 
+client = OpenAI(api_key=os.getenv("Huggin_API_KEY"))
 TIMEZONE = pytz.timezone("America/Sao_Paulo")
 
 import os
@@ -19,6 +23,44 @@ CURIOSIDADES_CRIPTO = [
     "Existem milhares de criptomoedas, mas o Bitcoin ainda domina o mercado."
 ]
 ARQUIVO_USADAS = "usadas.txt"
+
+
+HF_API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
+HF_HEADERS = {
+    "Authorization": f"Bearer {os.getenv('HF_API_KEY')}"
+}
+
+async def responder_com_ia(pergunta: str) -> str:
+    payload = {
+        "inputs": (
+            "Você é um assistente educacional especializado em criptomoedas. "
+            "Responda de forma clara, objetiva e profissional, sem fazer "
+            "recomendações financeiras.\n\n"
+            f"Pergunta: {pergunta}\nResposta:"
+        ),
+        "parameters": {
+            "max_new_tokens": 300,
+            "temperature": 0.5,
+            "return_full_text": False
+        }
+    }
+
+    response = requests.post(
+        HF_API_URL,
+        headers=HF_HEADERS,
+        json=payload,
+        timeout=60
+    )
+
+    if response.status_code != 200:
+        return "⚠️ No momento não consegui responder. Tente novamente."
+
+    data = response.json()
+
+    # A resposta vem como lista
+    return data[0]["generated_text"].strip()
+
+    
 
 def carregar_usadas():
     if not os.path.exists(ARQUIVO_USADAS):
@@ -117,9 +159,11 @@ app.add_handler(CommandHandler("stop", stop))
 app.add_handler(CommandHandler("promo", promo))
 
 app.add_handler(CommandHandler("id", id))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
