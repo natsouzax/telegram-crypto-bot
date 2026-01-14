@@ -148,6 +148,9 @@ async def testen(update: Update, context: ContextTypes.DEFAULT_TYPE):
     texto = await gerar_conteudo_automatico("noite")
     await context.bot.send_message(chat_id=GROUP_ID, text=texto)
 
+async def testar_resumo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await resumo_semanal(context)
+
 
 # ================== COMANDOS BÁSICOS ==================
 
@@ -181,8 +184,8 @@ async def id(update: Update, context: ContextTypes.DEFAULT_TYPE):
 app = ApplicationBuilder().token(TOKEN).build()
 
 # Agendamentos
-app.job_queue.run_daily(post_manha, time=time(hour=8, minute=0, tzinfo=TIMEZONE))
-app.job_queue.run_daily(post_noite, time=time(hour=19, minute=0, tzinfo=TIMEZONE))
+app.job_queue.run_daily(post_manha, time=time(hour=12, minute=5, tzinfo=TIMEZONE))
+app.job_queue.run_daily(post_noite, time=time(hour=12, minute=6, tzinfo=TIMEZONE))
 app.job_queue.run_daily(
     resumo_semanal,
     time=time(hour=19, minute=30, tzinfo=TIMEZONE),
@@ -195,6 +198,8 @@ app.add_handler(CommandHandler("stop", stop))
 app.add_handler(CommandHandler("id", id))
 app.add_handler(CommandHandler("teste", teste))
 app.add_handler(CommandHandler("testen", testen))
+app.add_handler(CommandHandler("testeresumo", testar_resumo))
 
 print("🤖 BitJurisBot rodando...")
 app.run_polling()
+
