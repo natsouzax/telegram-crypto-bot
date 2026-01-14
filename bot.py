@@ -24,6 +24,17 @@ TOKEN = os.getenv("BOT_TOKEN")
 GROUP_ID = -1003422643576  # ID do grupo
 ARQUIVO_USADAS = "usadas.txt"
 
+TEMAS_CRIPTO = [
+    "história das criptomoedas",
+    "blockchain e tecnologia",
+    "segurança e boas práticas",
+    "mitos e verdades sobre cripto",
+    "curiosidades pouco conhecidas",
+    "erros comuns de iniciantes",
+    "diferença entre Bitcoin e outras criptos",
+    "como funciona uma transação blockchain",
+]
+
 CURIOSIDADES_CRIPTO = [
     "O Bitcoin foi criado em 2008 por um autor desconhecido usando o pseudônimo Satoshi Nakamoto.",
     "A oferta máxima de Bitcoin é limitada a 21 milhões de unidades.",
@@ -72,10 +83,15 @@ async def chat_ia(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ================== IA (CONTEÚDO AUTOMÁTICO) ==================
 
+from datetime import datetime
+
 async def gerar_conteudo_automatico(tipo: str) -> str:
+    hoje = datetime.now(TIMEZONE)
+    tema = TEMAS_CRIPTO[hoje.weekday() % len(TEMAS_CRIPTO)]
+
     if tipo == "manha":
         prompt = (
-            "Crie uma curiosidade curta e interessante sobre criptomoedas ou blockchain. "
+            f"Gere uma curiosidade curta sobre {tema}. "
             "Use linguagem simples, educativa e profissional. "
             "Não faça recomendações financeiras. "
             "Máximo de 3 linhas."
@@ -83,29 +99,24 @@ async def gerar_conteudo_automatico(tipo: str) -> str:
         titulo = "☀️ Curiosidade do dia"
     else:
         prompt = (
-            "Crie um insight curto ou explicação simples sobre criptomoedas ou blockchain, "
-            "voltado para público geral. "
+            f"Gere um insight curto explicando {tema}. "
+            "Use tom claro e acessível para público geral. "
             "Não faça recomendações financeiras. "
             "Máximo de 3 linhas."
         )
         titulo = "🌙 Insight da noite"
 
-    try:
-        resp = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "Você é um criador de conteúdo educacional sobre criptomoedas."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=120
-        )
+    resp = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "Você é um criador de conteúdo educacional sobre criptomoedas."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.7,
+        max_tokens=120
+    )
 
-        texto = resp.choices[0].message.content.strip()
-        return f"{titulo}\n\n{texto}"
-
-    except Exception:
-        return None
+    return f"{titulo}\n\n{resp.choices[0].message.content.strip()}"
 
 
 async def post_manha(context: ContextTypes.DEFAULT_TYPE):
@@ -200,12 +211,12 @@ app = ApplicationBuilder().token(TOKEN).build()
 # Conteúdo automático com IA
 app.job_queue.run_daily(
     post_manha,
-    time=time(hour=10, minute=25, tzinfo=TIMEZONE)
+    time=time(hour=10, minute=35, tzinfo=TIMEZONE)
 )
 
 app.job_queue.run_daily(
     post_noite,
-    time=time(hour=10, minute=28, tzinfo=TIMEZONE)
+    time=time(hour=10, minute=38, tzinfo=TIMEZONE)
 )
 
 # Curiosidade fixa (opcional)
@@ -222,4 +233,5 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
