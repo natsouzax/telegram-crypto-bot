@@ -34,11 +34,13 @@ CURIOSIDADES_CRIPTO = [
 
 # ================== HUGGING FACE ==================
 
-HF_API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
+HF_API_URL = "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2"
 
 HF_HEADERS = {
-    "Authorization": f"Bearer {os.getenv('HF_API_KEY')}"
+    "Authorization": f"Bearer {os.getenv('HF_API_KEY')}",
+    "Content-Type": "application/json"
 }
+
 
 # ================== IA ==================
 
@@ -192,6 +194,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_ia))
 
 print("🤖 Bot rodando...")
 app.run_polling()
+
 
 
 
