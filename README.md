@@ -1,98 +1,120 @@
-🤖 BitJurisBot
+# BitJurisBot
 
-Automated educational Telegram bot for crypto, blockchain, and legal awareness.
+## Automated Educational Telegram Bot for Crypto, Blockchain & Legal Awareness
 
-BitJurisBot is a Telegram bot designed to automatically generate and publish educational content about cryptocurrencies, blockchain technology, and digital legal awareness.
-It is built for LegalTech and fintech communities that want consistent, responsible, and professional content — without manual effort.
+BitJurisBot is an automated Telegram bot designed to generate and publish educational content about cryptocurrencies, blockchain technology, and digital legal awareness.
 
-✨ Features
+It was built for LegalTech, fintech, and crypto communities that want consistent, responsible, and professional content without manual effort.
 
-☀️ Daily Morning Content
+---
 
-Educational crypto curiosities
-Short, accessible, non-financial advice
+## What does this bot do?
 
-🌙 Daily Evening Insights
+BitJurisBot works fully automatically, publishing institutional content directly to Telegram groups and assisting users in private chat.
 
-Clear explanations about crypto, blockchain, and digital security
-Institutional tone aligned with LegalTech standards
+### Morning content
+- Short crypto curiosities
+- Simple and accessible language
+- Educational focus only
 
-📊 Weekly Summary (Fridays)
-Automated recap of the main topics covered during the week
+### Evening insights
+- Clear explanations about crypto and blockchain
+- Digital security and legal awareness
+- Professional and institutional tone
 
-🧠 AI-Powered Content
-Content generated dynamically using OpenAI models
-Low repetition with weekly themes
+### Weekly summary
+- Automated recap published every Friday night
+- Reinforces the main topics of the week
 
-🏷️ Institutional CTA
-Soft, non-commercial brand references to BitJuris
-No financial recommendations
+---
 
-👤 Private Chat Assistant
+## AI-powered content
 
-Users can ask crypto-related questions in private chat
-Educational responses only
+- Content generated dynamically using OpenAI models
+- Topics rotate based on the day of the week
+- Low repetition by design
+- No financial or investment advice
 
-⚙️ Fully Automated
+---
 
-No manual posting required
-Runs continuously via background jobs
+## Institutional positioning
 
-🛠️ Tech Stack
+The bot includes soft, non-commercial references to BitJuris, focused on education and legal awareness.
 
-Python 3.11+
-python-telegram-bot
-OpenAI API
-SQLite (user management)
-Railway / Render (deployment)
-Telegram Bot API
+No ads. No hype. No promises.
 
-📂 Project Structure
-├── bot.py              # Main bot logic
-├── database.py         # SQLite database setup
-├── usadas.txt          # Control of repeated content
-├── requirements.txt    # Dependencies
-└── README.md
+---
 
-⚙️ Environment Variables
+## Private AI assistant
 
-Create the following environment variables:
+In private chat, users can ask questions related to crypto and blockchain and receive educational answers only.
 
-BOT_TOKEN=your_telegram_bot_token
-OPENAI_API_KEY=your_openai_api_key
+Public groups remain clean and focused on content delivery.
 
-🚀 How to Run Locally
-pip install -r requirements.txt
-python bot.py
+---
 
-📌 How It Works
+## Automation
 
-The bot posts automatically to a predefined Telegram group.
-Content themes change based on the day of the week.
-Morning and night posts follow different editorial formats.
-A weekly summary is posted every Friday night.
-Private messages trigger AI-based educational responses.
+- Fully automated posting
+- No manual interaction required
+- Runs continuously in background jobs
 
-🔐 Content Policy
+---
 
-No financial advice
-No investment recommendations
-Educational and informational purpose only
-Institutional and professional tone
+## Tech stack
 
-🎯 Use Cases
+- Python 3.11+
+- python-telegram-bot
+- OpenAI API
+- SQLite
+- Telegram Bot API
+- Railway or Render for deployment
 
-LegalTech communities
-Crypto education groups
-Telegram channels focused on blockchain
-Institutional branding with low operational cost
+---
 
-📄 License
+## Project structure
 
-This project is provided for educational and internal use.
-You may adapt it to your own projects, respecting API usage policies.
+-bot.py Main bot logic,
+-database.py SQLite database,
+-usadas.txt Content repetition control,
+-requirements.txt Dependencies,
+-README.md
 
-👤 Author
+---
 
-Developed by Natan Oliveira
-Automation • Systems • LegalTech • AI
+## Environment variables
+
+-BOT_TOKEN=your_telegram_bot_token,
+-OPENAI_API_KEY=your_openai_api_key
+
+---
+
+## How to run locally
+
+-pip install -r requirements.txt,
+-python bot.py
+---
+
+## Content policy
+
+- Educational purpose only
+- No financial advice
+- No investment recommendations
+- Professional and institutional tone
+
+---
+
+## Use cases
+
+- LegalTech communities
+- Crypto education groups
+- Blockchain-focused Telegram channels
+- Institutional automation with low operational cost
+
+---
+
+## Author
+
+-Developed by Natan Oliveira  
+-Automation • Systems • LegalTech • AI
+
