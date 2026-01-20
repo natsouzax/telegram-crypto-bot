@@ -191,7 +191,7 @@ app = ApplicationBuilder().token(TOKEN).build()
 
 # Agendamentos
 app.job_queue.run_daily(post_manha, time=time(hour=7, minute=00, tzinfo=TIMEZONE))
-app.job_queue.run_daily(post_noite, time=time(hour=10, minute=00, tzinfo=TIMEZONE))
+app.job_queue.run_daily(post_noite, time=time(hour=20, minute=30, tzinfo=TIMEZONE))
 app.job_queue.run_daily(
     resumo_semanal,
     time=time(hour=19, minute=30, tzinfo=TIMEZONE),
@@ -208,6 +208,7 @@ app.add_handler(CommandHandler("testeresumo", testar_resumo))
 
 print("🤖 BitJurisBot rodando...")
 app.run_polling()
+
 
 
 
