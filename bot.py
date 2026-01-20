@@ -74,10 +74,16 @@ async def gerar_conteudo_automatico(tipo: str) -> str:
     if tipo == "manha":
         titulo = "☀️ Curiosidade do dia"
         prompt = (
-            f"Gere uma curiosidade curta sobre {tema}. "
-            "Use linguagem simples, educativa e profissional. "
-            "Não faça recomendações financeiras. "
-            "Máximo de 3 linhas."
+                f"Gere uma curiosidade educativa relacionada a {tema}."
+                "Regras obrigatórias:"
+                "- NÃO comece o texto com “Você sabia”, “Uma curiosidade” ou estruturas semelhantes."
+                "- Varie a forma de abertura, usando observações, fatos pouco comentados ou consequências práticas."
+                "- Linguagem clara, profissional e acessível."
+                "- Tom institucional e informativo."
+                "- NÃO faça recomendações financeiras ou incentivos a investimento."
+                "- O conteúdo deve ensinar algo novo ou pouco percebido."
+                "- Máximo de 3 linhas."
+                "Evite definições enciclopédicas. Priorize contexto, impacto ou implicações reais do tema."
         )
     else:
         titulo = "🌙 Insight da noite"
@@ -184,8 +190,8 @@ async def id(update: Update, context: ContextTypes.DEFAULT_TYPE):
 app = ApplicationBuilder().token(TOKEN).build()
 
 # Agendamentos
-app.job_queue.run_daily(post_manha, time=time(hour=7, minute=0, tzinfo=TIMEZONE))
-app.job_queue.run_daily(post_noite, time=time(hour=19, minute=0, tzinfo=TIMEZONE))
+app.job_queue.run_daily(post_manha, time=time(hour=14, minute=14, tzinfo=TIMEZONE))
+app.job_queue.run_daily(post_noite, time=time(hour=14, minute=15, tzinfo=TIMEZONE))
 app.job_queue.run_daily(
     resumo_semanal,
     time=time(hour=19, minute=30, tzinfo=TIMEZONE),
@@ -202,5 +208,6 @@ app.add_handler(CommandHandler("testeresumo", testar_resumo))
 
 print("🤖 BitJurisBot rodando...")
 app.run_polling()
+
 
 
