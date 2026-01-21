@@ -20,7 +20,7 @@ from database import cursor, conn
 
 TIMEZONE = pytz.timezone("America/Sao_Paulo")
 TOKEN = os.getenv("BOT_TOKEN")
-GROUP_ID = -1003534870430  # ID do grupo
+GROUP_ID = -1002921804098  # ID do grupo
 
 ASSINATURA = "—\n📌 Conteúdo educativo • BitJuris"
 
@@ -49,20 +49,6 @@ CTA_SEXTA = [
 # ================== OPENAI ==================
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-
-# Testes
-async def debug_chat_id(context: ContextTypes.DEFAULT_TYPE):
-    chat = context.job.chat_id
-    print("CHAT ID DETECTADO:", chat)
-    
-from telegram.ext import ChannelPostHandler
-
-async def debug_channel_post(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("CANAL ID DETECTADO:", update.effective_chat.id)
-
-app.add_handler(ChannelPostHandler(debug_channel_post))
-
 
 # ================== FUNÇÕES AUXILIARES ==================
 
@@ -204,7 +190,7 @@ app = ApplicationBuilder().token(TOKEN).build()
 
 # Agendamentos
 app.job_queue.run_daily(post_manha, time=time(hour=7, minute=00, tzinfo=TIMEZONE))
-app.job_queue.run_daily(post_noite, time=time(hour=20, minute=30, tzinfo=TIMEZONE))
+app.job_queue.run_daily(post_noite, time=time(hour=21, minute=30, tzinfo=TIMEZONE))
 app.job_queue.run_daily(
     resumo_semanal,
     time=time(hour=19, minute=30, tzinfo=TIMEZONE),
@@ -219,14 +205,9 @@ app.add_handler(CommandHandler("teste", teste))
 app.add_handler(CommandHandler("testen", testen))
 app.add_handler(CommandHandler("testeresumo", testar_resumo))
 
-app.job_queue.run_daily(
-    debug_chat_id,
-    time=time(hour=21, minute=10, tzinfo=TIMEZONE),
-    chat_id=None
-)
-
 print("🤖 BitJurisBot rodando...")
 app.run_polling()
+
 
 
 
