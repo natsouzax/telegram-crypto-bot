@@ -212,12 +212,13 @@ app.add_handler(CommandHandler("testeresumo", testar_resumo))
 
 app.job_queue.run_daily(
     debug_chat_id,
-    time=time(hour=AGORA, minute=AGORA+1, tzinfo=TIMEZONE),
+    time=time(hour=21, minute=10, tzinfo=TIMEZONE),
     chat_id=None
 )
 
 print("🤖 BitJurisBot rodando...")
 app.run_polling()
+
 
 
 
