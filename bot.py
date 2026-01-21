@@ -50,9 +50,18 @@ CTA_SEXTA = [
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+
+# Testes
 async def debug_chat_id(context: ContextTypes.DEFAULT_TYPE):
     chat = context.job.chat_id
     print("CHAT ID DETECTADO:", chat)
+    
+from telegram.ext import ChannelPostHandler
+
+async def debug_channel_post(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("CANAL ID DETECTADO:", update.effective_chat.id)
+
+app.add_handler(ChannelPostHandler(debug_channel_post))
 
 
 # ================== FUNÇÕES AUXILIARES ==================
@@ -218,6 +227,7 @@ app.job_queue.run_daily(
 
 print("🤖 BitJurisBot rodando...")
 app.run_polling()
+
 
 
 
