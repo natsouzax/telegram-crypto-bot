@@ -50,6 +50,10 @@ CTA_SEXTA = [
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+async def debug_chat_id(context: ContextTypes.DEFAULT_TYPE):
+    chat = context.job.chat_id
+    print("CHAT ID DETECTADO:", chat)
+
 
 # ================== FUNÇÕES AUXILIARES ==================
 
@@ -206,8 +210,15 @@ app.add_handler(CommandHandler("teste", teste))
 app.add_handler(CommandHandler("testen", testen))
 app.add_handler(CommandHandler("testeresumo", testar_resumo))
 
+app.job_queue.run_daily(
+    debug_chat_id,
+    time=time(hour=AGORA, minute=AGORA+1, tzinfo=TIMEZONE),
+    chat_id=None
+)
+
 print("🤖 BitJurisBot rodando...")
 app.run_polling()
+
 
 
 
